@@ -14,3 +14,18 @@ https://github.com/user-attachments/assets/90f3fe3e-a555-42d2-b071-7cbab2cb3172
 ### Default frontpage is BBC
 <img width="1412" alt="image" src="https://github.com/user-attachments/assets/a83f210b-a359-4541-bb95-83dbe8ec3094">
 
+# Installation
+## Homebrew
+```
+brew tap piqoni/cast-text
+brew install cast-text
+```
+
+## Binaries
+Download binaries for your OS at [release page](https://github.com/piqoni/cast-text/releases), and chmod +x the file to allow execution. 
+
+## Using GO INSTALL
+If you use GO, you can install it directly:
+```
+go install github.com/piqoni/cast-text@latest
+```
