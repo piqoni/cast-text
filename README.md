@@ -11,3 +11,6 @@
 
 ## Showcase
 https://github.com/user-attachments/assets/90f3fe3e-a555-42d2-b071-7cbab2cb3172
+### Default frontpage is BBC
+<img width="1412" alt="image" src="https://github.com/user-attachments/assets/a83f210b-a359-4541-bb95-83dbe8ec3094">
+
