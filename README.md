@@ -36,7 +36,7 @@ go install github.com/piqoni/cast-text@latest
 ```
 
 # How to run it
-If you want to read BBC just run the binary. If you want to read something else pass its rss address to -rss parameter. For example to read http://lobste.rs start it by running:
+If you want to read BBC just run the binary without any arguments. If you want to read something else pass its rss address to -rss parameter. For example to read http://lobste.rs start it by running:
 ```
 cast-text -rss https://lobste.rs/rss
 ```
