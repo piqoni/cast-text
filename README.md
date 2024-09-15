@@ -12,6 +12,7 @@
  - If for some reason you need to open the article on a browser simply press ENTER.
  - q to quit, other optinal shortcuts put in ( ) on the title to jump directly to the article
  - Trackpad scrolling will list through articles (thanks to the great rivo/tview library)
+ - UPCOMING: Perhaps support non-rss news outlets like CNN, etc. 
 
 ## Showcase
 https://github.com/user-attachments/assets/90f3fe3e-a555-42d2-b071-7cbab2cb3172
