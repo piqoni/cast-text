@@ -5,9 +5,11 @@
 
 ## Features
  - Read the full article content from the terminal
- - Easy to use: ←↓↑→ arrow keys (or hjkl) is all you need to use its main features. One single UI.
+ - Easy to use: ←↓↑→ arrow keys (or hjkl) is all you need to use its main features. Up/Dow to browse through articles, Left/Right to scroll the article content. 
  - Fast: it will prefetch adjacent articles - so every action is instant.
  - By default it will load the BBC, but you can change the source by passing `-rss <your_rss_or_atom_feed>`
+ - One single UI for both article listing and article content.
+ - If for some reason you need to open the article on a browser simply press ENTER. 
 
 ## Showcase
 https://github.com/user-attachments/assets/90f3fe3e-a555-42d2-b071-7cbab2cb3172
