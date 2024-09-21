@@ -53,13 +53,19 @@ func main() {
 		AddItem(list, 0, 1, true).
 		AddItem(textView, 0, 1, false)
 
+	offset := 0
+
 	list.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		if index < len(urls) {
+			// Reset offset when a new article is selected
+			offset = 0
+			textView.ScrollTo(offset, 0)
+
 			// Fetch current website
 			go fetchWebsiteWithCache(urls[index], updateTextChan)
 			textView.SetTitle(titles[index])
 
-			// Pre-fetch next and previous website if they exists
+			// Pre-fetch next and previous website if they exist
 			if index-1 >= 0 {
 				go fetchWebsite(urls[index-1], nil)
 			}
@@ -68,8 +74,6 @@ func main() {
 			}
 		}
 	})
-
-	offset := 0
 
 	go func() {
 		for {
