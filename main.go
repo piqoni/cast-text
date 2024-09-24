@@ -89,7 +89,13 @@ func main() {
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter:
-			openURL(urls[list.GetCurrentItem()])
+			index := list.GetCurrentItem()
+			itemText, _ := list.GetItemText(index)
+			if index >= 0 && index < len(urls) {
+				openURL(urls[index])
+			} else if itemText == "Quit" {
+				app.Stop()
+			}
 			return nil
 		case tcell.KeyRight:
 			offset += 1
