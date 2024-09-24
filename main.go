@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os/exec"
 	"runtime"
 	"time"
@@ -149,6 +150,11 @@ func fetchWebsite(url string, updateTextChan chan<- string) {
 }
 
 func fetchRSSArticles(feedURL string) (urls []string, titles []string) {
+	parsedUrl, err := url.Parse(feedURL)
+	if err != nil || parsedUrl.Scheme == "" {
+		feedURL = "https://" + feedURL
+	}
+
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(feedURL)
 	if err != nil {
