@@ -17,7 +17,13 @@ import (
 
 var articleCache = make(map[string]string)
 
-func fetchWebsiteWithCache(url string, updateTextChan chan<- string) {
+func fetchWebsiteWithCache(url string, updateTextChan chan<- string, finally func()) {
+	// finally is used to warm up the cache for the adjacent article once first article is fetched
+	defer func() {
+		if finally != nil {
+			go finally()
+		}
+	}()
 	if text, ok := articleCache[url]; ok {
 		updateTextChan <- text
 	} else {
@@ -48,7 +54,10 @@ func main() {
 		SetDynamicColors(true).
 		SetScrollable(true)
 	textView.SetBorder(true).SetTitle(titles[0]).SetTitleAlign(0)
-	go fetchWebsite(urls[0], updateTextChan)
+
+	go fetchWebsiteWithCache(urls[0], updateTextChan, func() {
+		fetchWebsite(urls[1], nil) // warm up below article
+	})
 
 	flex := tview.NewFlex().
 		AddItem(list, 0, 1, true).
@@ -63,15 +72,15 @@ func main() {
 			textView.ScrollTo(offset, 0)
 
 			// Fetch current website
-			go fetchWebsiteWithCache(urls[index], updateTextChan)
+			go fetchWebsiteWithCache(urls[index], updateTextChan, nil)
 			textView.SetTitle(titles[index])
 
 			// Pre-fetch next and previous website if they exist
 			if index-1 >= 0 {
-				go fetchWebsite(urls[index-1], nil)
+				go fetchWebsiteWithCache(urls[index-1], nil, nil)
 			}
 			if index+1 < len(urls) {
-				go fetchWebsite(urls[index+1], nil)
+				go fetchWebsiteWithCache(urls[index+1], nil, nil)
 			}
 		}
 	})
