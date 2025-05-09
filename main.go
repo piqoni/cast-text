@@ -42,6 +42,12 @@ func main() {
 	for i, title := range titles {
 		list.AddItem(title, "", rune('1'+i), nil)
 	}
+	lastItemShortcut := rune(list.GetItemCount() - 1 + '1')
+	if lastItemShortcut != rune('*') {
+		list.AddItem("Settings", "Open settings", rune('*'), nil)
+	} else {
+		list.AddItem("Settings", "Open settings", rune(list.GetItemCount() + '1'), nil)
+	}
 	list.AddItem("Quit", "Press to exit", 'q', func() {
 		app.Stop()
 	})
@@ -65,7 +71,17 @@ func main() {
 
 	offset := 0
 
+	inputCapture := defaultInputCapture(app, textView, list, urls, &offset)
+	settingsView := buildSettingsMenu(app, flex, list, textView, inputCapture)
+
 	list.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		if(index == len(urls)) {
+			app.SetInputCapture(buildSettingsInputCapture())
+			app.SetRoot(settingsView, true)
+			offset = 0
+			textView.ScrollTo(offset, 0)
+			list.SetCurrentItem(index - 1)
+		}
 		if index < len(urls) {
 			// Reset offset when a new article is selected
 			offset = 0
@@ -96,27 +112,36 @@ func main() {
 		}
 	}()
 
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(inputCapture)
+	app.SetRoot(flex, true)
+
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
+}
+
+func defaultInputCapture(app *tview.Application, textView *tview.TextView, list *tview.List, urls []string, offset *int) func(event *tcell.EventKey) *tcell.EventKey {
+	return func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter:
 			index := list.GetCurrentItem()
 			itemText, _ := list.GetItemText(index)
 			if index >= 0 && index < len(urls) {
-				openURL(urls[index])
+				openURL((urls)[index])
 			} else if itemText == "Quit" {
 				app.Stop()
 			}
 			return nil
 		case tcell.KeyRight:
-			offset += 1
-			textView.ScrollTo(offset, 0)
+			*offset += 1
+			textView.ScrollTo(*offset, 0)
 			return nil
 		case tcell.KeyLeft:
-			offset -= 1
-			if offset < 0 {
-				offset = 0
+			*offset -= 1
+			if *offset < 0 {
+				*offset = 0
 			}
-			textView.ScrollTo(offset, 0)
+			textView.ScrollTo(*offset, 0)
 			return nil
 		case tcell.KeyRune:
 			switch event.Rune() {
@@ -125,15 +150,15 @@ func main() {
 			case 'k':
 				return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
 			case 'l':
-				offset += 1
-				textView.ScrollTo(offset, 0)
+				*offset += 1
+				textView.ScrollTo(*offset, 0)
 				return nil
 			case 'h':
-				offset -= 1
-				if offset < 0 {
-					offset = 0
+				*offset -= 1
+				if *offset < 0 {
+					*offset = 0
 				}
-				textView.ScrollTo(offset, 0)
+				textView.ScrollTo(*offset, 0)
 				return nil
 			default:
 				return event
@@ -141,12 +166,67 @@ func main() {
 		default:
 			return event
 		}
+	}
+}
+
+func buildSettingsMenu(app *tview.Application, appFlex *tview.Flex, newsList *tview.List, newsText * tview.TextView, defaultInputCapture func(event *tcell.EventKey) *tcell.EventKey) *tview.Flex {
+	settingsMenu := tview.NewFlex().SetDirection(tview.FlexColumn)
+	settingsMenu.SetBorder(true).SetTitle("Settings").SetTitleAlign(0)
+
+	optionsList := tview.NewList().ShowSecondaryText(false).SetShortcutColor(tcell.ColorDarkGray)
+	widgetList := tview.NewFlex().SetDirection(tview.FlexRow)
+
+	// TODO: add more settings
+	var colorOptions = []string{tcell.ColorRed.String(), tcell.ColorGreen.String(), tcell.ColorBlue.String(), tcell.ColorYellow.String(), tcell.ColorWhite.String()}
+	var settings = map[string]tview.Primitive{
+		"Select text color": tview.NewDropDown().
+		SetLabel("Select Color (Press enter): ").
+		SetLabelColor(tcell.ColorWhite).
+		SetOptions(colorOptions, func(option string, index int) {
+			newsList.SetMainTextColor(tcell.ColorNames[option])
+			newsText.SetTextColor(tcell.ColorNames[option])
+			optionsList.SetMainTextColor(tcell.ColorNames[option])
+			app.SetFocus(optionsList)
+		}).
+		SetFieldTextColor(tcell.ColorDarkGray).
+		SetFieldBackgroundColor(tcell.ColorWhite),
+	}
+	
+	shortcutIndex := 0
+	for option, widget := range settings {
+		optionsList.AddItem(option, "", rune('1' + shortcutIndex), func() {
+			optionsList.SetCurrentItem(0)
+			app.SetFocus(widget)
+		})
+		widgetList.AddItem(widget, 0, 1, false)
+		shortcutIndex++
+	}
+	optionsList.AddItem("Quit", "", 'q', func() {
+		optionsList.SetCurrentItem(0)
+		app.SetInputCapture(defaultInputCapture)
+		app.SetRoot(appFlex, true)
 	})
 
-	app.SetRoot(flex, true)
+	settingsMenu.AddItem(optionsList, 0, 1, true)
+	settingsMenu.AddItem(widgetList, 0, 1, false)
+	return settingsMenu
+}
 
-	if err := app.Run(); err != nil {
-		panic(err)
+func buildSettingsInputCapture() func(event *tcell.EventKey) *tcell.EventKey {
+	return func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyRune:
+			switch event.Rune() {
+			case 'j':
+				return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
+			case 'k':
+				return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
+			default:
+				return event
+			}
+		default:
+			return event
+		}
 	}
 }
 
